@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MathThinking AI - 수학 문제 해결 AI</title>
+    <meta name="description" content="AI가 도와주는 스마트한 수학 학습 플랫폼. 사진만 찍으면 AI가 문제를 해결해드려요!">
+    <meta name="keywords" content="수학, AI, 문제해결, 학습, 폴리아, 교육">
+    
+    <!-- Open Graph 메타 태그 -->
+    <meta property="og:title" content="MathThinking AI - 수학 문제 해결 AI">
+    <meta property="og:description" content="수학 문제 사진만 찍으면 AI가 해결해드려요!">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630/2563eb/ffffff?text=MathThinking+AI">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
     
     <!-- React 라이브러리 -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -18,42 +29,84 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     
-    <!-- Custom styles -->
+    <!-- 커스텀 스타일 -->
     <style>
-        .animate-spin {
-            animation: spin 1s linear infinite;
-        }
+        .animate-spin { animation: spin 1s linear infinite; }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .animate-bounce { animation: bounce 1s infinite; }
         
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
         
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+            50% { transform: none; animation-timing-function: cubic-bezier(0,0,0.2,1); }
+        }
+        
         * {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .loading-dots::after {
+            content: '';
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { content: ''; }
+            33% { content: '.'; }
+            66% { content: '..'; }
+            100% { content: '...'; }
         }
     </style>
 </head>
 <body>
     <div id="root">
-        <!-- 로딩 중 표시 -->
-        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #f3f4f6;">
-            <div style="text-align: center;">
-                <div style="width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
-                <p style="color: #6b7280;">MathThinking AI 로딩 중...</p>
+        <!-- 고급 로딩 화면 -->
+        <div class="min-h-screen gradient-bg flex items-center justify-center">
+            <div class="text-center text-white">
+                <div class="mb-8">
+                    <div class="text-6xl mb-4 animate-bounce">🧮</div>
+                    <h1 class="text-3xl font-bold mb-2">MathThinking AI</h1>
+                    <p class="text-blue-100">로딩 중입니다</p>
+                </div>
+                <div class="flex justify-center space-x-2">
+                    <div class="w-3 h-3 bg-white rounded-full animate-bounce" style="animation-delay: 0ms;"></div>
+                    <div class="w-3 h-3 bg-white rounded-full animate-bounce" style="animation-delay: 150ms;"></div>
+                    <div class="w-3 h-3 bg-white rounded-full animate-bounce" style="animation-delay: 300ms;"></div>
+                </div>
             </div>
         </div>
     </div>
     
     <script type="text/babel">
-        // Lucide React 아이콘들을 전역으로 사용할 수 있도록 설정
+        // Lucide React 아이콘들
         const { 
             Camera, Upload, Brain, Target, BookOpen, TrendingUp, Award, Clock, Plus,
             ChevronRight, User, Mail, Lock, Eye, EyeOff, X, BarChart3, Home, 
-            FileText, Settings, Menu, Lightbulb, Star
+            FileText, Settings, Menu, Lightbulb, Star, Download, Wifi, WifiOff,
+            RefreshCw, AlertCircle, CheckCircle, Search, Filter, ChevronDown,
+            Calendar, Users, Play, ArrowRight
         } = lucide;
 
-        // 간단한 라우터 컴포넌트
+        // 라우터 컴포넌트
         const Router = () => {
             const [currentRoute, setCurrentRoute] = React.useState(() => {
                 const hash = window.location.hash.slice(1);
@@ -65,6 +118,7 @@
                 const handleHashChange = () => {
                     const hash = window.location.hash.slice(1);
                     setCurrentRoute(hash || 'home');
+                    setMobileMenuOpen(false);
                 };
                 
                 window.addEventListener('hashchange', handleHashChange);
@@ -85,43 +139,59 @@
 
             return (
                 <div className="min-h-screen bg-gray-50">
-                    {/* 네비게이션 바 */}
-                    <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
+                    {/* 향상된 네비게이션 바 */}
+                    <nav className="bg-white shadow-lg border-b sticky top-0 z-50">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex justify-between h-16">
                                 <div className="flex items-center">
                                     <div className="flex-shrink-0 flex items-center">
-                                        <Brain className="h-8 w-8 text-blue-600" />
-                                        <span className="ml-2 text-xl font-bold text-gray-900">MathThinking AI</span>
+                                        <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
+                                            <Brain className="h-6 w-6 text-white" />
+                                        </div>
+                                        <div className="ml-3">
+                                            <span className="text-xl font-bold text-gray-900">MathThinking</span>
+                                            <div className="text-xs text-blue-600 font-medium">AI</div>
+                                        </div>
                                     </div>
                                 </div>
                                 
                                 {/* 데스크톱 메뉴 */}
-                                <div className="hidden md:flex items-center space-x-4">
+                                <div className="hidden md:flex items-center space-x-2">
                                     {menuItems.map((item) => {
                                         const Icon = item.icon;
                                         return (
                                             <button
                                                 key={item.id}
                                                 onClick={() => navigate(item.id)}
-                                                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2 ${
                                                     currentRoute === item.id 
-                                                        ? 'bg-blue-100 text-blue-700' 
-                                                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                                        ? 'bg-blue-100 text-blue-700 shadow-sm' 
+                                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                                                 }`}
                                             >
-                                                <Icon className="w-4 h-4 inline mr-1" />
-                                                {item.label}
+                                                <Icon className="w-4 h-4" />
+                                                <span>{item.label}</span>
                                             </button>
                                         );
                                     })}
+                                    
+                                    {/* GitHub 링크 */}
+                                    <a
+                                        href="https://github.com"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="ml-4 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center space-x-2"
+                                    >
+                                        <span>⭐</span>
+                                        <span>GitHub</span>
+                                    </a>
                                 </div>
 
                                 {/* 모바일 메뉴 버튼 */}
                                 <div className="md:hidden flex items-center">
                                     <button
                                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                                        className="text-gray-500 hover:text-gray-700 p-2"
+                                        className="text-gray-600 hover:text-gray-900 p-2"
                                     >
                                         <Menu className="w-6 h-6" />
                                     </button>
@@ -139,14 +209,14 @@
                                             <button
                                                 key={item.id}
                                                 onClick={() => navigate(item.id)}
-                                                className={`w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                                                className={`w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center space-x-3 ${
                                                     currentRoute === item.id 
                                                         ? 'bg-blue-100 text-blue-700' 
-                                                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                                                 }`}
                                             >
-                                                <Icon className="w-4 h-4 inline mr-2" />
-                                                {item.label}
+                                                <Icon className="w-5 h-5" />
+                                                <span>{item.label}</span>
                                             </button>
                                         );
                                     })}
@@ -162,96 +232,217 @@
                         {currentRoute === 'dashboard' && <DashboardPage navigate={navigate} />}
                         {currentRoute === 'result' && <ResultPage navigate={navigate} />}
                     </main>
+
+                    {/* 푸터 */}
+                    <footer className="bg-white border-t mt-16">
+                        <div className="max-w-7xl mx-auto px-4 py-12">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                                <div className="col-span-1 md:col-span-2">
+                                    <div className="flex items-center mb-4">
+                                        <Brain className="h-8 w-8 text-blue-600 mr-3" />
+                                        <span className="text-xl font-bold text-gray-900">MathThinking AI</span>
+                                    </div>
+                                    <p className="text-gray-600 mb-4 max-w-md">
+                                        AI가 도와주는 스마트한 수학 학습 플랫폼입니다. 
+                                        폴리아의 4단계 문제해결법으로 체계적인 사고력을 기르세요.
+                                    </p>
+                                    <div className="flex space-x-4">
+                                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                                            ✅ GitHub Pages로 배포됨
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h3 className="font-semibold text-gray-900 mb-4">주요 기능</h3>
+                                    <ul className="space-y-2 text-gray-600">
+                                        <li>📷 이미지 업로드</li>
+                                        <li>🤖 AI 분석</li>
+                                        <li>📊 학습 추적</li>
+                                        <li>🎯 맞춤 추천</li>
+                                    </ul>
+                                </div>
+                                
+                                <div>
+                                    <h3 className="font-semibold text-gray-900 mb-4">기술 스택</h3>
+                                    <ul className="space-y-2 text-gray-600">
+                                        <li>⚛️ React 18</li>
+                                        <li>🎨 Tailwind CSS</li>
+                                        <li>🌐 GitHub Pages</li>
+                                        <li>🔧 Babel + CDN</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div className="border-t pt-8 mt-8 text-center text-gray-500">
+                                <p>© 2025 MathThinking AI. Made with ❤️ using AI assistance.</p>
+                                <p className="text-sm mt-2">
+                                    이 프로젝트는 Claude AI의 도움으로 만들어졌습니다.
+                                </p>
+                            </div>
+                        </div>
+                    </footer>
                 </div>
             );
         };
 
-        // 홈페이지 컴포넌트
+        // 홈페이지 컴포넌트 (향상된 버전)
         const HomePage = ({ navigate }) => {
+            const [isVisible, setIsVisible] = React.useState(false);
+            
+            React.useEffect(() => {
+                setIsVisible(true);
+            }, []);
+
             return (
-                <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+                <div className="min-h-screen">
                     {/* Hero Section */}
-                    <div className="relative overflow-hidden">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-                            <div className="text-center">
-                                <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+                    <div className="relative overflow-hidden gradient-bg">
+                        <div className="absolute inset-0 bg-black opacity-10"></div>
+                        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+                            <div className={`text-center transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                                <div className="text-6xl md:text-8xl mb-8 animate-bounce">🧮</div>
+                                <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
                                     수학 문제 사진만 찍으면
-                                    <span className="text-blue-600 block">AI가 해결해드려요!</span>
+                                    <span className="block text-yellow-300">AI가 해결해드려요!</span>
                                 </h1>
-                                <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                                <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-4xl mx-auto">
                                     폴리아의 4단계 문제해결법을 기반으로 한 AI가 여러분의 수학적 사고력을 키워드립니다
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                     <button
                                         onClick={() => navigate('analyze')}
-                                        className="bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg"
+                                        className="group bg-white text-blue-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-50 transition-all duration-300 shadow-xl hover:shadow-2xl flex items-center justify-center space-x-2"
                                     >
-                                        지금 시작하기
+                                        <Camera className="w-5 h-5" />
+                                        <span>지금 시작하기</span>
+                                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                     </button>
                                     <button
                                         onClick={() => navigate('dashboard')}
-                                        className="bg-white text-blue-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-50 transition-colors shadow-lg border border-blue-200"
+                                        className="glass-effect text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white hover:bg-opacity-20 transition-all duration-300 shadow-xl flex items-center justify-center space-x-2"
                                     >
-                                        대시보드 보기
+                                        <BarChart3 className="w-5 h-5" />
+                                        <span>대시보드 보기</span>
                                     </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 통계 섹션 */}
+                    <div className="py-16 bg-white">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="text-center mb-12">
+                                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                    실시간 서비스 현황
+                                </h2>
+                                <p className="text-gray-600">
+                                    GitHub Pages로 전 세계에 배포된 라이브 서비스입니다
+                                </p>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                                <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl">
+                                    <div className="text-4xl font-bold text-blue-600 mb-2">Live</div>
+                                    <div className="text-gray-700">서비스 상태</div>
+                                </div>
+                                <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl">
+                                    <div className="text-4xl font-bold text-green-600 mb-2">100%</div>
+                                    <div className="text-gray-700">업타임</div>
+                                </div>
+                                <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl">
+                                    <div className="text-4xl font-bold text-purple-600 mb-2">CDN</div>
+                                    <div className="text-gray-700">글로벌 배포</div>
+                                </div>
+                                <div className="text-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl">
+                                    <div className="text-4xl font-bold text-orange-600 mb-2">SSL</div>
+                                    <div className="text-gray-700">보안 인증</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* 기능 소개 */}
-                    <div className="py-16 bg-white">
+                    <div className="py-16 bg-gray-50">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-                                주요 기능
-                            </h2>
+                            <div className="text-center mb-16">
+                                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                    AI 기반 수학 학습의 새로운 경험
+                                </h2>
+                                <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                                    단순한 답만 제공하는 것이 아니라, 체계적인 사고 과정을 통해 진정한 수학적 사고력을 기릅니다
+                                </p>
+                            </div>
+                            
                             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                                 <FeatureCard
                                     icon={Camera}
-                                    title="이미지 업로드"
-                                    description="사진을 찍거나 파일을 업로드하면 AI가 문제를 인식합니다"
+                                    title="스마트 인식"
+                                    description="사진을 찍기만 하면 AI가 수학 문제를 정확하게 인식하고 분석합니다"
                                     color="blue"
+                                    delay="0"
                                 />
                                 <FeatureCard
                                     icon={Brain}
-                                    title="AI 분석"
-                                    description="고도화된 AI가 문제를 분석하고 해결법을 제시합니다"
+                                    title="AI 해설"
+                                    description="단순한 답이 아닌 단계별 해설로 문제 해결 과정을 완벽하게 이해할 수 있습니다"
                                     color="purple"
+                                    delay="100"
                                 />
                                 <FeatureCard
-                                    icon={FileText}
-                                    title="단계별 해설"
-                                    description="폴리아 4단계에 따른 체계적인 문제해결 과정을 배웁니다"
+                                    icon={Target}
+                                    title="사고과정 분석"
+                                    description="폴리아 4단계 문제해결법으로 체계적인 수학적 사고력을 기를 수 있습니다"
                                     color="green"
+                                    delay="200"
                                 />
                                 <FeatureCard
                                     icon={TrendingUp}
-                                    title="개인화 추천"
-                                    description="학습 패턴을 분석하여 맞춤형 문제를 추천합니다"
+                                    title="개인화 학습"
+                                    description="개인의 학습 패턴을 분석하여 맞춤형 문제와 학습법을 추천합니다"
                                     color="orange"
+                                    delay="300"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    {/* 데모 안내 */}
-                    <div className="py-16 bg-blue-50">
+                    {/* CTA 섹션 */}
+                    <div className="py-16 bg-gradient-to-r from-blue-600 to-purple-700">
                         <div className="max-w-4xl mx-auto px-4 text-center">
-                            <div className="bg-white rounded-xl p-8 shadow-lg">
-                                <div className="text-4xl mb-4">🎮</div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                                    라이브 데모 버전
+                            <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-8 border border-white border-opacity-20">
+                                <div className="text-4xl mb-6">🚀</div>
+                                <h3 className="text-3xl font-bold text-white mb-4">
+                                    지금 바로 체험해보세요!
                                 </h3>
-                                <p className="text-gray-600 mb-6">
-                                    이것은 MathThinking AI의 완전히 작동하는 데모입니다. 
-                                    모든 기능을 실제로 체험해보세요!
+                                <p className="text-xl text-blue-100 mb-8">
+                                    완전히 작동하는 라이브 데모입니다. 실제 이미지를 업로드하고 AI 분석을 받아보세요.
                                 </p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-500">
-                                    <div>✓ 실제 이미지 업로드 체험</div>
-                                    <div>✓ 사고과정 입력 인터페이스</div>
-                                    <div>✓ AI 분석 시뮬레이션</div>
-                                    <div>✓ 개인화된 대시보드</div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left mb-8">
+                                    <div className="flex items-center space-x-3 text-white">
+                                        <CheckCircle className="w-5 h-5 text-green-300" />
+                                        <span>실제 이미지 업로드 기능</span>
+                                    </div>
+                                    <div className="flex items-center space-x-3 text-white">
+                                        <CheckCircle className="w-5 h-5 text-green-300" />
+                                        <span>사고과정 입력 인터페이스</span>
+                                    </div>
+                                    <div className="flex items-center space-x-3 text-white">
+                                        <CheckCircle className="w-5 h-5 text-green-300" />
+                                        <span>AI 분석 시뮬레이션</span>
+                                    </div>
+                                    <div className="flex items-center space-x-3 text-white">
+                                        <CheckCircle className="w-5 h-5 text-green-300" />
+                                        <span>개인화된 대시보드</span>
+                                    </div>
                                 </div>
+                                <button
+                                    onClick={() => navigate('analyze')}
+                                    className="bg-white text-blue-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-50 transition-all duration-300 shadow-xl hover:shadow-2xl"
+                                >
+                                    무료로 체험하기 →
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -259,29 +450,42 @@
             );
         };
 
-        const FeatureCard = ({ icon: Icon, title, description, color }) => {
+        const FeatureCard = ({ icon: Icon, title, description, color, delay }) => {
+            const [isVisible, setIsVisible] = React.useState(false);
+            
+            React.useEffect(() => {
+                const timer = setTimeout(() => setIsVisible(true), parseInt(delay));
+                return () => clearTimeout(timer);
+            }, [delay]);
+
             const colorClasses = {
-                blue: 'from-blue-400 to-blue-600',
-                purple: 'from-purple-400 to-purple-600',
-                green: 'from-green-400 to-green-600',
-                orange: 'from-orange-400 to-orange-600'
+                blue: 'from-blue-400 to-blue-600 shadow-blue-200',
+                purple: 'from-purple-400 to-purple-600 shadow-purple-200',
+                green: 'from-green-400 to-green-600 shadow-green-200',
+                orange: 'from-orange-400 to-orange-600 shadow-orange-200'
             };
 
             return (
-                <div className="text-center p-6 hover:transform hover:scale-105 transition-transform">
-                    <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${colorClasses[color]} rounded-2xl mb-4`}>
+                <div className={`bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                    <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${colorClasses[color]} rounded-2xl mb-6 shadow-lg`}>
                         <Icon className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{title}</h3>
-                    <p className="text-gray-600">{description}</p>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">{title}</h3>
+                    <p className="text-gray-600 leading-relaxed">{description}</p>
                 </div>
             );
         };
 
-        // 분석 페이지 (간소화)
+        // 분석 페이지 컴포넌트
         const AnalyzePage = ({ navigate }) => {
             const [uploadedImage, setUploadedImage] = React.useState(null);
             const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+            const [thinking, setThinking] = React.useState({
+                understand: '',
+                plan: '',
+                solve: '',
+                check: ''
+            });
 
             const handleImageUpload = (event) => {
                 const file = event.target.files[0];
@@ -295,6 +499,11 @@
             };
 
             const handleAnalyze = () => {
+                if (!uploadedImage) {
+                    alert('이미지를 먼저 업로드해주세요!');
+                    return;
+                }
+                
                 setIsAnalyzing(true);
                 setTimeout(() => {
                     setIsAnalyzing(false);
@@ -302,222 +511,602 @@
                 }, 3000);
             };
 
-            return (
-                <div className="max-w-4xl mx-auto px-4 py-8">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-4">문제 분석</h1>
-                        <p className="text-gray-600">수학 문제 이미지를 업로드하고 AI 분석을 받아보세요</p>
-                    </div>
+            const handleThinkingChange = (step, value) => {
+                setThinking(prev => ({
+                    ...prev,
+                    [step]: value
+                }));
+            };
 
-                    <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-                        {!uploadedImage ? (
-                            <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-blue-400 transition-colors">
-                                <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                                    수학 문제 이미지를 업로드하세요
-                                </h3>
-                                <p className="text-gray-500 mb-4">
-                                    JPG, PNG 형식 • 최대 5MB
-                                </p>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    className="hidden"
-                                    id="file-upload"
-                                />
-                                <label
-                                    htmlFor="file-upload"
-                                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer inline-block"
-                                >
-                                    파일 선택
-                                </label>
-                            </div>
-                        ) : (
-                            <div className="text-center">
-                                <img 
-                                    src={uploadedImage} 
-                                    alt="업로드된 문제" 
-                                    className="max-h-64 mx-auto rounded-lg shadow-md mb-4"
-                                />
-                                <div className="flex justify-center gap-4">
-                                    <button
-                                        onClick={() => setUploadedImage(null)}
-                                        className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
+            return (
+                <div className="min-h-screen bg-gray-50 py-8">
+                    <div className="max-w-4xl mx-auto px-4">
+                        <div className="text-center mb-8">
+                            <h1 className="text-3xl font-bold text-gray-900 mb-4">🔍 문제 분석</h1>
+                            <p className="text-gray-600">수학 문제 이미지를 업로드하고 사고 과정을 입력해보세요</p>
+                        </div>
+
+                        {/* 이미지 업로드 섹션 */}
+                        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+                            {!uploadedImage ? (
+                                <div className="border-2 border-dashed border-gray-300 rounded-2xl p-16 text-center hover:border-blue-400 transition-colors bg-gradient-to-br from-blue-50 to-purple-50">
+                                    <Camera className="h-16 w-16 text-gray-400 mx-auto mb-6" />
+                                    <h3 className="text-2xl font-bold text-gray-700 mb-4">
+                                        수학 문제 이미지를 업로드하세요
+                                    </h3>
+                                    <p className="text-gray-500 mb-6">
+                                        JPG, PNG 형식 • 최대 10MB
+                                    </p>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                        id="file-upload"
+                                    />
+                                    <label
+                                        htmlFor="file-upload"
+                                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 cursor-pointer inline-flex items-center space-x-2 shadow-lg hover:shadow-xl"
                                     >
-                                        다시 선택
-                                    </button>
+                                        <Upload className="w-5 h-5" />
+                                        <span>파일 선택</span>
+                                    </label>
+                                </div>
+                            ) : (
+                                <div className="text-center">
+                                    <img 
+                                        src={uploadedImage} 
+                                        alt="업로드된 문제" 
+                                        className="max-h-80 mx-auto rounded-xl shadow-lg mb-6"
+                                    />
+                                    <div className="flex justify-center gap-4">
+                                        <button
+                                            onClick={() => setUploadedImage(null)}
+                                            className="px-6 py-3 text-gray-600 hover:text-gray-800 border-2 border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-200 flex items-center space-x-2"
+                                        >
+                                            <X className="w-4 h-4" />
+                                            <span>다시 선택</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 폴리아 4단계 사고 과정 입력 */}
+                        {uploadedImage && (
+                            <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+                                <div className="text-center mb-8">
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-4">💭 사고 과정 입력</h2>
+                                    <p className="text-gray-600">폴리아의 4단계 문제해결법에 따라 생각해보세요</p>
+                                </div>
+
+                                <div className="space-y-6">
+                                    {/* 1단계: 문제 이해 */}
+                                    <div className="border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition-colors">
+                                        <div className="flex items-center mb-4">
+                                            <div className="p-2 bg-blue-100 rounded-lg mr-3">
+                                                <Target className="w-5 h-5 text-blue-600" />
+                                            </div>
+                                            <h3 className="text-lg font-semibold text-gray-800">1단계: 문제 이해하기</h3>
+                                        </div>
+                                        <textarea
+                                            value={thinking.understand}
+                                            onChange={(e) => handleThinkingChange('understand', e.target.value)}
+                                            placeholder="문제에서 무엇을 구하고 있나요? 주어진 조건은 무엇인가요?"
+                                            className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                            rows="3"
+                                        />
+                                    </div>
+
+                                    {/* 2단계: 계획 세우기 */}
+                                    <div className="border border-gray-200 rounded-xl p-6 hover:border-purple-300 transition-colors">
+                                        <div className="flex items-center mb-4">
+                                            <div className="p-2 bg-purple-100 rounded-lg mr-3">
+                                                <Lightbulb className="w-5 h-5 text-purple-600" />
+                                            </div>
+                                            <h3 className="text-lg font-semibold text-gray-800">2단계: 계획 세우기</h3>
+                                        </div>
+                                        <textarea
+                                            value={thinking.plan}
+                                            onChange={(e) => handleThinkingChange('plan', e.target.value)}
+                                            placeholder="어떤 공식이나 방법을 사용할 건가요? 해결 순서는?"
+                                            className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                                            rows="3"
+                                        />
+                                    </div>
+
+                                    {/* 3단계: 계획 실행 */}
+                                    <div className="border border-gray-200 rounded-xl p-6 hover:border-green-300 transition-colors">
+                                        <div className="flex items-center mb-4">
+                                            <div className="p-2 bg-green-100 rounded-lg mr-3">
+                                                <Play className="w-5 h-5 text-green-600" />
+                                            </div>
+                                            <h3 className="text-lg font-semibold text-gray-800">3단계: 계획 실행하기</h3>
+                                        </div>
+                                        <textarea
+                                            value={thinking.solve}
+                                            onChange={(e) => handleThinkingChange('solve', e.target.value)}
+                                            placeholder="실제 계산 과정을 단계별로 적어보세요"
+                                            className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                                            rows="4"
+                                        />
+                                    </div>
+
+                                    {/* 4단계: 검토하기 */}
+                                    <div className="border border-gray-200 rounded-xl p-6 hover:border-orange-300 transition-colors">
+                                        <div className="flex items-center mb-4">
+                                            <div className="p-2 bg-orange-100 rounded-lg mr-3">
+                                                <CheckCircle className="w-5 h-5 text-orange-600" />
+                                            </div>
+                                            <h3 className="text-lg font-semibold text-gray-800">4단계: 검토하기</h3>
+                                        </div>
+                                        <textarea
+                                            value={thinking.check}
+                                            onChange={(e) => handleThinkingChange('check', e.target.value)}
+                                            placeholder="답이 맞는지 확인해보세요. 다른 방법으로도 풀 수 있나요?"
+                                            className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                                            rows="3"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="text-center mt-8">
                                     <button
                                         onClick={handleAnalyze}
                                         disabled={isAnalyzing}
-                                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-12 py-4 rounded-xl text-lg font-semibold hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl flex items-center space-x-3 mx-auto"
                                     >
-                                        {isAnalyzing ? '분석 중...' : '분석 시작'}
+                                        <Brain className="w-6 h-6" />
+                                        <span>{isAnalyzing ? 'AI 분석 중...' : 'AI 분석 시작'}</span>
                                     </button>
                                 </div>
                             </div>
                         )}
-                    </div>
 
-                    {isAnalyzing && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                            <div className="bg-white rounded-xl p-8 text-center max-w-sm mx-4">
-                                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                                <h3 className="text-lg font-semibold mb-2">AI가 문제를 분석중입니다</h3>
-                                <p className="text-gray-600">잠시만 기다려주세요...</p>
+                        {/* 분석 중 로딩 모달 */}
+                        {isAnalyzing && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl">
+                                    <div className="animate-spin rounded-full h-20 w-20 border-4 border-blue-200 border-t-blue-600 mx-auto mb-6"></div>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-3">🤖 AI가 문제를 분석중입니다</h3>
+                                    <p className="text-gray-600 mb-4">폴리아 4단계에 따라 체계적으로 분석하고 있어요</p>
+                                    <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-700">
+                                        💡 잠깐! 이 시간에 다른 학습자들은 어떻게 풀었는지도 함께 알려드릴게요
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             );
         };
 
-        // 대시보드 페이지 (간소화)
+        // 대시보드 페이지
         const DashboardPage = ({ navigate }) => {
+            const [timeRange, setTimeRange] = React.useState('week');
+
             return (
                 <div className="min-h-screen bg-gray-50 py-8">
                     <div className="max-w-7xl mx-auto px-4">
-                        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white mb-8">
-                            <h1 className="text-2xl font-bold mb-2">안녕하세요, 학습자님! 👋</h1>
-                            <p className="text-blue-100">오늘도 수학 실력 향상을 위해 함께 해요</p>
+                        {/* 환영 메시지 */}
+                        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-8 text-white mb-8 shadow-xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h1 className="text-3xl font-bold mb-2">안녕하세요, 학습자님! 👋</h1>
+                                    <p className="text-blue-100 text-lg">오늘도 수학 실력 향상을 위해 함께 해요</p>
+                                </div>
+                                <div className="hidden md:block">
+                                    <div className="text-6xl opacity-20">📊</div>
+                                </div>
+                            </div>
                         </div>
 
+                        {/* 주요 통계 카드 */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                            <div className="bg-white rounded-xl shadow-sm border p-6">
-                                <div className="flex items-center justify-between">
-                                    <div className="p-3 rounded-full bg-blue-100 text-blue-600">
-                                        <BookOpen className="w-6 h-6" />
-                                    </div>
-                                    <span className="text-sm font-medium text-green-600">+2</span>
-                                </div>
-                                <div className="mt-4">
-                                    <h3 className="text-2xl font-bold text-gray-900">3</h3>
-                                    <p className="text-sm text-gray-600">오늘 푼 문제</p>
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-xl shadow-sm border p-6">
-                                <div className="flex items-center justify-between">
-                                    <div className="p-3 rounded-full bg-green-100 text-green-600">
-                                        <Target className="w-6 h-6" />
-                                    </div>
-                                    <span className="text-sm font-medium text-green-600">+5%</span>
-                                </div>
-                                <div className="mt-4">
-                                    <h3 className="text-2xl font-bold text-gray-900">82%</h3>
-                                    <p className="text-sm text-gray-600">정답률</p>
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-xl shadow-sm border p-6">
-                                <div className="flex items-center justify-between">
-                                    <div className="p-3 rounded-full bg-orange-100 text-orange-600">
-                                        <Clock className="w-6 h-6" />
-                                    </div>
-                                    <span className="text-sm font-medium text-green-600">+15분</span>
-                                </div>
-                                <div className="mt-4">
-                                    <h3 className="text-2xl font-bold text-gray-900">45분</h3>
-                                    <p className="text-sm text-gray-600">학습 시간</p>
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-xl shadow-sm border p-6">
-                                <div className="flex items-center justify-between">
-                                    <div className="p-3 rounded-full bg-purple-100 text-purple-600">
-                                        <Award className="w-6 h-6" />
-                                    </div>
-                                    <span className="text-sm font-medium text-green-600">+3</span>
-                                </div>
-                                <div className="mt-4">
-                                    <h3 className="text-2xl font-bold text-gray-900">15위</h3>
-                                    <p className="text-sm text-gray-600">이번 주 순위</p>
-                                </div>
-                            </div>
+                            <StatCard
+                                icon={BookOpen}
+                                title="오늘 푼 문제"
+                                value="7"
+                                change="+3"
+                                changeType="positive"
+                                color="blue"
+                            />
+                            <StatCard
+                                icon={Target}
+                                title="정답률"
+                                value="85%"
+                                change="+5%"
+                                changeType="positive"
+                                color="green"
+                            />
+                            <StatCard
+                                icon={Clock}
+                                title="학습 시간"
+                                value="2.5시간"
+                                change="+30분"
+                                changeType="positive"
+                                color="orange"
+                            />
+                            <StatCard
+                                icon={Award}
+                                title="이번 주 순위"
+                                value="12위"
+                                change="+5↑"
+                                changeType="positive"
+                                color="purple"
+                            />
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-sm border p-6">
-                            <h2 className="text-lg font-semibold text-gray-800 mb-4">⚡ 빠른 시작</h2>
-                            <div className="grid gap-4">
-                                <button
-                                    onClick={() => navigate('analyze')}
-                                    className="w-full p-4 border-2 border-gray-200 rounded-lg text-left hover:border-blue-300 hover:bg-blue-50 transition-all"
-                                >
-                                    <div className="flex items-start space-x-3">
-                                        <Plus className="w-5 h-5 mt-1 text-blue-600" />
-                                        <div>
-                                            <h4 className="font-medium text-gray-800">새 문제 분석</h4>
-                                            <p className="text-sm text-gray-600">이미지를 업로드해서 문제를 분석해보세요</p>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* 학습 진도 */}
+                            <div className="lg:col-span-2 bg-white rounded-2xl shadow-xl p-8">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-xl font-bold text-gray-900">📈 학습 진도</h2>
+                                    <select 
+                                        value={timeRange}
+                                        onChange={(e) => setTimeRange(e.target.value)}
+                                        className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="week">이번 주</option>
+                                        <option value="month">이번 달</option>
+                                        <option value="year">올해</option>
+                                    </select>
+                                </div>
+                                
+                                {/* 가상 차트 영역 */}
+                                <div className="h-64 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl flex items-center justify-center mb-6">
+                                    <div className="text-center">
+                                        <div className="text-4xl mb-4">📊</div>
+                                        <p className="text-gray-600">학습 진도 차트</p>
+                                        <p className="text-sm text-gray-500 mt-2">실제 프로젝트에서는 Chart.js나 D3.js로 구현</p>
+                                    </div>
+                                </div>
+
+                                {/* 과목별 진도 */}
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <ProgressItem subject="대수" progress={75} color="blue" />
+                                    <ProgressItem subject="기하" progress={60} color="green" />
+                                    <ProgressItem subject="확률" progress={40} color="yellow" />
+                                    <ProgressItem subject="미적분" progress={20} color="purple" />
+                                </div>
+                            </div>
+
+                            {/* 사이드바 */}
+                            <div className="space-y-6">
+                                {/* 오늘의 목표 */}
+                                <div className="bg-white rounded-2xl shadow-xl p-6">
+                                    <h3 className="text-lg font-bold text-gray-900 mb-4">🎯 오늘의 목표</h3>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-4 h-4 bg-green-500 rounded-full flex-shrink-0"></div>
+                                            <span className="text-gray-700 line-through">문제 5개 풀기</span>
+                                        </div>
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-4 h-4 bg-green-500 rounded-full flex-shrink-0"></div>
+                                            <span className="text-gray-700 line-through">1시간 학습</span>
+                                        </div>
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-4 h-4 bg-gray-300 rounded-full flex-shrink-0"></div>
+                                            <span className="text-gray-500">오답노트 정리</span>
                                         </div>
                                     </div>
-                                </button>
+                                </div>
+
+                                {/* 추천 문제 */}
+                                <div className="bg-white rounded-2xl shadow-xl p-6">
+                                    <h3 className="text-lg font-bold text-gray-900 mb-4">💡 추천 문제</h3>
+                                    <div className="space-y-3">
+                                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                            <p className="text-sm font-medium text-blue-900">이차방정식 응용</p>
+                                            <p className="text-xs text-blue-600 mt-1">난이도: 중급</p>
+                                        </div>
+                                        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                                            <p className="text-sm font-medium text-green-900">삼각함수 그래프</p>
+                                            <p className="text-xs text-green-600 mt-1">난이도: 초급</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 빠른 실행 */}
+                                <div className="bg-white rounded-2xl shadow-xl p-6">
+                                    <h3 className="text-lg font-bold text-gray-900 mb-4">⚡ 빠른 시작</h3>
+                                    <button
+                                        onClick={() => navigate('analyze')}
+                                        className="w-full p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl"
+                                    >
+                                        <Plus className="w-5 h-5" />
+                                        <span>새 문제 분석</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
+            );
+        };
+
+        const StatCard = ({ icon: Icon, title, value, change, changeType, color }) => {
+            const colorClasses = {
+                blue: 'bg-blue-100 text-blue-600',
+                green: 'bg-green-100 text-green-600',
+                orange: 'bg-orange-100 text-orange-600',
+                purple: 'bg-purple-100 text-purple-600'
+            };
+
+            return (
+                <div className="bg-white rounded-2xl shadow-xl border p-6 hover:shadow-2xl transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className={`p-3 rounded-xl ${colorClasses[color]}`}>
+                            <Icon className="w-6 h-6" />
+                        </div>
+                        <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+                            changeType === 'positive' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                        }`}>
+                            {change}
+                        </span>
+                    </div>
+                    <div>
+                        <h3 className="text-3xl font-bold text-gray-900 mb-1">{value}</h3>
+                        <p className="text-sm text-gray-600">{title}</p>
+                    </div>
+                </div>
+            );
+        };
+
+        const ProgressItem = ({ subject, progress, color }) => {
+            const colorClasses = {
+                blue: 'bg-blue-500',
+                green: 'bg-green-500',
+                yellow: 'bg-yellow-500',
+                purple: 'bg-purple-500'
+            };
+
+            return (
+                <div className="text-center">
+                    <div className="relative w-16 h-16 mx-auto mb-2">
+                        <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 100 100">
+                            <circle
+                                cx="50"
+                                cy="50"
+                                r="40"
+                                stroke="#e5e7eb"
+                                strokeWidth="8"
+                                fill="none"
+                            />
+                            <circle
+                                cx="50"
+                                cy="50"
+                                r="40"
+                                stroke="currentColor"
+                                strokeWidth="8"
+                                fill="none"
+                                strokeDasharray={`${progress * 2.51} 251`}
+                                className={colorClasses[color]}
+                            />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-sm font-bold text-gray-700">{progress}%</span>
+                        </div>
+                    </div>
+                    <p className="text-sm text-gray-600">{subject}</p>
                 </div>
             );
         };
 
         // 결과 페이지
         const ResultPage = ({ navigate }) => {
+            const [activeTab, setActiveTab] = React.useState('analysis');
+
             return (
-                <div className="max-w-4xl mx-auto px-4 py-8">
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">📊 분석 결과</h1>
-                        <p className="text-gray-600">AI가 분석한 결과를 확인해보세요</p>
-                    </div>
+                <div className="min-h-screen bg-gray-50 py-8">
+                    <div className="max-w-4xl mx-auto px-4">
+                        <div className="text-center mb-8">
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">📊 AI 분석 결과</h1>
+                            <p className="text-gray-600">폴리아 4단계 문제해결법으로 분석한 결과입니다</p>
+                        </div>
 
-                    <div className="space-y-6">
-                        <div className="bg-white rounded-xl shadow-lg border p-6">
-                            <div className="flex items-center space-x-3 mb-4">
-                                <div className="p-2 bg-blue-100 rounded-full">
-                                    <BookOpen className="w-5 h-5 text-blue-600" />
-                                </div>
-                                <h2 className="text-lg font-semibold text-gray-800">📖 분석 완료</h2>
+                        {/* 탭 네비게이션 */}
+                        <div className="bg-white rounded-2xl shadow-xl mb-6">
+                            <div className="flex border-b border-gray-200">
+                                <button
+                                    onClick={() => setActiveTab('analysis')}
+                                    className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
+                                        activeTab === 'analysis'
+                                            ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    🧠 AI 분석
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('solution')}
+                                    className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
+                                        activeTab === 'solution'
+                                            ? 'border-b-2 border-purple-500 text-purple-600 bg-purple-50'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    💡 해결과정
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('feedback')}
+                                    className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
+                                        activeTab === 'feedback'
+                                            ? 'border-b-2 border-green-500 text-green-600 bg-green-50'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    📝 피드백
+                                </button>
                             </div>
-                            
-                            <div className="bg-green-50 rounded-lg p-4 border-l-4 border-green-500">
-                                <p className="text-green-700">
-                                    ✅ 이미지에서 수학 문제를 성공적으로 인식했습니다!<br/>
-                                    📝 문제 유형: 이차방정식<br/>
-                                    🎯 난이도: 중급<br/>
-                                    ⏱️ 예상 풀이 시간: 5-10분
-                                </p>
+
+                            <div className="p-8">
+                                {activeTab === 'analysis' && (
+                                    <div className="space-y-6">
+                                        <div className="bg-green-50 rounded-xl p-6 border-l-4 border-green-500">
+                                            <div className="flex items-start space-x-3">
+                                                <CheckCircle className="w-6 h-6 text-green-600 mt-0.5" />
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-green-900 mb-2">✅ 문제 인식 완료</h3>
+                                                    <div className="text-green-800 space-y-1">
+                                                        <p>• 문제 유형: <strong>이차방정식의 응용</strong></p>
+                                                        <p>• 난이도: <strong>중급 (고1~고2 수준)</strong></p>
+                                                        <p>• 예상 풀이 시간: <strong>8-12분</strong></p>
+                                                        <p>• 핵심 개념: <strong>이차방정식, 인수분해, 근의 공식</strong></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-blue-50 rounded-xl p-6 border-l-4 border-blue-500">
+                                            <div className="flex items-start space-x-3">
+                                                <Brain className="w-6 h-6 text-blue-600 mt-0.5" />
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-blue-900 mb-2">🤖 AI 추천 접근법</h3>
+                                                    <div className="text-blue-800 space-y-2">
+                                                        <p><strong>1순위:</strong> 근의 공식 활용 (성공률 95%)</p>
+                                                        <p><strong>2순위:</strong> 완전제곱식으로 변형 (성공률 80%)</p>
+                                                        <p><strong>3순위:</strong> 인수분해 (성공률 70%)</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeTab === 'solution' && (
+                                    <div className="space-y-6">
+                                        <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6">
+                                            <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">
+                                                📚 폴리아 4단계 해결과정
+                                            </h3>
+                                            
+                                            <div className="space-y-6">
+                                                <StepCard
+                                                    number="1"
+                                                    title="문제 이해하기"
+                                                    icon={Target}
+                                                    color="blue"
+                                                    content="주어진 조건을 정리하고 구하는 값을 명확히 파악합니다. 이차방정식 x² - 5x + 6 = 0의 해를 구하는 문제입니다."
+                                                />
+                                                
+                                                <StepCard
+                                                    number="2"
+                                                    title="계획 세우기"
+                                                    icon={Lightbulb}
+                                                    color="purple"
+                                                    content="인수분해가 가능한지 확인하고, 불가능하면 근의 공식을 사용합니다. 이 경우 (x-2)(x-3) = 0으로 인수분해가 가능합니다."
+                                                />
+                                                
+                                                <StepCard
+                                                    number="3"
+                                                    title="계획 실행하기"
+                                                    icon={Play}
+                                                    color="green"
+                                                    content="x² - 5x + 6 = (x-2)(x-3) = 0 따라서 x = 2 또는 x = 3입니다."
+                                                />
+                                                
+                                                <StepCard
+                                                    number="4"
+                                                    title="검토하기"
+                                                    icon={CheckCircle}
+                                                    color="orange"
+                                                    content="x = 2: 4 - 10 + 6 = 0 ✓ x = 3: 9 - 15 + 6 = 0 ✓ 두 해 모두 원래 방정식을 만족합니다."
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeTab === 'feedback' && (
+                                    <div className="space-y-6">
+                                        <div className="bg-yellow-50 rounded-xl p-6 border-l-4 border-yellow-500">
+                                            <div className="flex items-start space-x-3">
+                                                <Star className="w-6 h-6 text-yellow-600 mt-0.5" />
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-yellow-900 mb-2">💪 잘한 점</h3>
+                                                    <ul className="text-yellow-800 space-y-1">
+                                                        <li>• 문제를 체계적으로 접근했습니다</li>
+                                                        <li>• 적절한 해결 방법을 선택했습니다</li>
+                                                        <li>• 검산을 통해 답을 확인했습니다</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-orange-50 rounded-xl p-6 border-l-4 border-orange-500">
+                                            <div className="flex items-start space-x-3">
+                                                <TrendingUp className="w-6 h-6 text-orange-600 mt-0.5" />
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-orange-900 mb-2">🎯 개선할 점</h3>
+                                                    <ul className="text-orange-800 space-y-1">
+                                                        <li>• 더 다양한 해결법을 시도해보세요</li>
+                                                        <li>• 계산 과정을 더 자세히 적어보세요</li>
+                                                        <li>• 유사한 문제들을 더 풀어보시기 바랍니다</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-blue-50 rounded-xl p-6 border-l-4 border-blue-500">
+                                            <div className="flex items-start space-x-3">
+                                                <BookOpen className="w-6 h-6 text-blue-600 mt-0.5" />
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-blue-900 mb-2">📚 추천 학습</h3>
+                                                    <div className="text-blue-800 space-y-2">
+                                                        <p>• <strong>다음 단계:</strong> 이차방정식의 판별식</p>
+                                                        <p>• <strong>연관 개념:</strong> 이차함수의 그래프</p>
+                                                        <p>• <strong>응용 문제:</strong> 이차방정식 활용 문제</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-lg border p-6">
-                            <div className="flex items-center space-x-3 mb-4">
-                                <div className="p-2 bg-yellow-100 rounded-full">
-                                    <Lightbulb className="w-5 h-5 text-yellow-600" />
-                                </div>
-                                <h2 className="text-lg font-semibold text-gray-800">💡 AI 추천 해결법</h2>
-                            </div>
-                            
-                            <div className="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-500">
-                                <div className="text-gray-700 space-y-2">
-                                    <p><strong>1단계:</strong> 주어진 조건을 정리합니다</p>
-                                    <p><strong>2단계:</strong> 변수를 설정하여 방정식을 세웁니다</p>
-                                    <p><strong>3단계:</strong> 이차방정식을 풀이합니다</p>
-                                    <p><strong>4단계:</strong> 답을 검토하고 확인합니다</p>
-                                </div>
-                            </div>
-                        </div>
-
+                        {/* 액션 버튼 */}
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <button
                                 onClick={() => navigate('analyze')}
-                                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
                             >
-                                다른 문제 분석하기
+                                <Plus className="w-5 h-5" />
+                                <span>다른 문제 분석하기</span>
                             </button>
                             <button
                                 onClick={() => navigate('dashboard')}
-                                className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors"
+                                className="bg-white text-gray-700 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-50 transition-all duration-300 shadow-lg hover:shadow-xl border-2 border-gray-200 flex items-center justify-center space-x-2"
                             >
-                                대시보드로 돌아가기
+                                <BarChart3 className="w-5 h-5" />
+                                <span>대시보드로 돌아가기</span>
                             </button>
                         </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const StepCard = ({ number, title, icon: Icon, color, content }) => {
+            const colorClasses = {
+                blue: 'bg-blue-100 text-blue-600 border-blue-200',
+                purple: 'bg-purple-100 text-purple-600 border-purple-200',
+                green: 'bg-green-100 text-green-600 border-green-200',
+                orange: 'bg-orange-100 text-orange-600 border-orange-200'
+            };
+
+            return (
+                <div className="flex items-start space-x-4 p-4 bg-white rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200">
+                    <div className={`flex-shrink-0 w-12 h-12 rounded-full ${colorClasses[color]} flex items-center justify-center border-2`}>
+                        <span className="font-bold text-lg">{number}</span>
+                    </div>
+                    <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                            <Icon className={`w-5 h-5 ${colorClasses[color].split(' ')[1]}`} />
+                            <h4 className="font-semibold text-gray-800">{title}</h4>
+                        </div>
+                        <p className="text-gray-600 leading-relaxed">{content}</p>
                     </div>
                 </div>
             );
